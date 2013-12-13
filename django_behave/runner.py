@@ -140,4 +140,26 @@ class DjangoBehaveTestSuiteRunner(DjangoTestSuiteRunner):
 
         return reorder_suite(suite, (LiveServerTestCase,))
 
+
+class DjangoBehaveOnlyFeatures(DjangoBehaveTestSuiteRunner):
+
+    def make_bdd_test_suite(self, features_dir):
+        return DjangoBehaveTestCase(features_dir=features_dir)
+
+    def build_suite(self, test_labels, extra_tests=None, **kwargs):
+        suite = unittest.TestSuite()
+
+        #get all features for given apps
+        for label in test_labels:
+            if '.' in label:
+                print 'Ignoring label with dot in: ' % label
+                continue
+            app = get_app(label)
+
+
+            features_dir = get_features(app)
+            if features_dir is not None:
+                suite.addTest(self.make_bdd_test_suite(features_dir))
+
+        return reorder_suite(suite, (LiveServerTestCase,))
 # eof:
