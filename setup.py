@@ -8,7 +8,7 @@ setup(
     description='Django Test Runner for the Behave BDD module',
     author='Rachel Willmer',
     author_email='rachel@willmer.org',
-    url='https://github.com/rwillmer/django-behave',
+    url='https://github.com/CampusBellhops/django-behave.git',
     classifiers=[
         'Programming Language :: Python :: 2.7',
         'Framework :: Django',
