@@ -7,7 +7,8 @@ from os.path import dirname, abspath, basename, join, isdir
 
 from django.test.simple import DjangoTestSuiteRunner, reorder_suite
 from django.test import LiveServerTestCase
-from django.db.models import get_app
+from django.db.models import get_app, get_apps
+from django.db.models.loading import AppCache
 
 from behave.configuration import Configuration, ConfigError
 from behave.runner import Runner
@@ -106,6 +107,7 @@ class DjangoBehaveTestCase(LiveServerTestCase):
             sys.exit(1)
         # end of from behave/__main__.py
 
+
 class DjangoBehaveTestSuiteRunner(DjangoTestSuiteRunner):
     def make_bdd_test_suite(self, features_dir):
         return DjangoBehaveTestCase(features_dir=features_dir)
@@ -137,6 +139,39 @@ class DjangoBehaveTestSuiteRunner(DjangoTestSuiteRunner):
             if features_dir is not None:
                 # build a test suite for this directory
                 suite.addTest(self.make_bdd_test_suite(features_dir))
+
+        return reorder_suite(suite, (LiveServerTestCase,))
+
+
+class DjangoBehaveOnlyFeatures(DjangoBehaveTestSuiteRunner):
+
+    def make_bdd_test_suite(self, features_dir):
+        return DjangoBehaveTestCase(features_dir=features_dir)
+
+    def build_suite(self, test_labels, extra_tests=None, **kwargs):
+        cache = AppCache()
+
+        get_app = cache.get_app
+        get_apps = cache.get_apps
+
+        suite = unittest.TestSuite()
+
+        #get all features for given apps
+        if test_labels:
+            for label in test_labels:
+                if '.' in label:
+                    print 'Ignoring label with dot in: ' % label
+                    continue
+                app = get_app(label)
+
+                features_dir = get_features(app)
+                if features_dir is not None:
+                    suite.addTest(self.make_bdd_test_suite(features_dir))
+        else:
+            for app in get_apps():
+                features_dir = get_features(app)
+                if features_dir is not None:
+                    suite.addTest(self.make_bdd_test_suite(features_dir))
 
         return reorder_suite(suite, (LiveServerTestCase,))
 
