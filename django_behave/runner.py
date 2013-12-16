@@ -174,5 +174,4 @@ class DjangoBehaveOnlyFeatures(DjangoBehaveTestSuiteRunner):
                     suite.addTest(self.make_bdd_test_suite(features_dir))
 
         return reorder_suite(suite, (LiveServerTestCase,))
-
 # eof:
